@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VentureGen - AI Startup Ideas</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Lucide Icons -->
+    <script src="https://unpkg.com/lucide-react@0.378.0/dist/umd/lucide.js"></script>
+    <!-- Page Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Custom styles for the Inter font */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0B0F19; /* A very dark, slightly blue background */
+        }
+        
+        /* Custom gradient for the hero text */
+        .text-gradient {
+            background: linear-gradient(to right, #2dd4bf, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Styling for the selection buttons */
+        .option-btn {
+            background-color: #1E293B; /* slate-800 */
+            color: #CBD5E1; /* slate-300 */
+            border: 1px solid #334155; /* slate-700 */
+            transition: all 0.2s ease-in-out;
+        }
+        .option-btn.selected {
+            background-color: #2563EB; /* blue-600 */
+            color: white;
+            border-color: #2563EB; /* blue-600 */
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Custom scrollbar for a more modern look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1E293B;
+        }
+        ::-webkit-scrollbar-thumb {
+            background-color: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background-color: #475569;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="text-slate-200 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-3xl mx-auto">
+
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold mb-3 text-gradient">
+                VentureGen
+            </h1>
+            <p class="text-lg text-slate-400">
+                Generate Your Next Unicorn. Now using your C++ backend!
+            </p>
+        </header>
+
+        <!-- Input Form -->
+        <div id="form-container" class="bg-gray-900 border border-slate-800 p-6 md:p-8 rounded-xl shadow-2xl space-y-8">
+            
+            <!-- Step 1: Skills -->
+            <div>
+                <label class="block text-lg font-semibold mb-3 text-slate-100">1. What's Your Tech Stack?</label>
+                <p class="text-sm text-slate-400 mb-4">Select your strongest skills. This helps tailor the technical stack of your venture.</p>
+                <div class="flex flex-wrap gap-3" id="skills-options">
+                    <!-- Skills will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Step 2: Interests -->
+            <div>
+                <label class="block text-lg font-semibold mb-3 text-slate-100">2. What's Your Passion?</label>
+                <p class="text-sm text-slate-400 mb-4">What market do you want to disrupt? This defines your venture's domain.</p>
+                <div class="flex flex-wrap gap-3" id="interests-options">
+                    <!-- Interests will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Step 3: Target Audience -->
+            <div>
+                <label class="block text-lg font-semibold mb-3 text-slate-100">3. Who's Your Target Audience?</label>
+                <p class="text-sm text-slate-400 mb-4">Who are you building this for? (Optional)</p>
+                <div class="flex flex-wrap gap-3" id="audience-options">
+                    <!-- Audience options will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Step 4: Monetization Model -->
+            <div>
+                <label class="block text-lg font-semibold mb-3 text-slate-100">4. How Will You Monetize?</label>
+                <p class="text-sm text-slate-400 mb-4">What's the business model? (Optional)</p>
+                <div class="flex flex-wrap gap-3" id="monetization-options">
+                    <!-- Monetization options will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <button id="generate-btn" class="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-cyan-500/30 hover:scale-[1.02] transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-gray-900">
+                <span id="btn-text">Synergize & Generate Idea</span>
+                <i data-lucide="zap" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading-container" class="text-center p-10 hidden">
+            <div class="spinner mx-auto mb-4"></div>
+            <p class="text-slate-400 font-medium">Analyzing Market Gaps...</p>
+            <p class="text-sm text-slate-500">Connecting to C++ backend and leveraging gpt-4o-mini...</p>
+        </div>
+
+        <!-- Result Display -->
+        <div id="result-container" class="mt-12">
+            <!-- AI-generated content will be injected here -->
+        </div>
+
+        <!-- Error Message Box -->
+        <div id="error-box" class="hidden mt-8 bg-red-900/50 border border-red-700 text-red-200 px-4 py-3 rounded-lg">
+            <p class="font-bold">Error</p>
+            <p id="error-message" class="text-sm">Something went wrong. Please check the console and try again.</p>
+        </div>
+    </div>
+
+    <!-- Main JavaScript Logic -->
+    <script>
+        // --- Configuration and Constants ---
+        const BACKEND_URL = 'http://localhost:8080/api/chat'; // Your C++ server endpoint
+
+        const skillsOptions = [
+            'Python (General)', 'JavaScript (Web)', 'React/Vue', 'Mobile (Swift/Kotlin)',
+            'Machine Learning (Basics)', 'Data Analysis', 'Web Scrapers', 'Game Dev (Unity/C++)'
+        ];
+        
+        const interestsOptions = [
+            'Sustainability (GreenTech)', 'Education (EdTech)', 'Finance (FinTech)', 
+            'Healthcare (HealthTech)', 'Gaming & Esports', 'Social Media', 'Productivity Tools', 'E-commerce'
+        ];
+        
+        const audienceOptions = [
+            'B2C (General Consumers)', 'B2B (Small Businesses)', 'Enterprise (Large Corps)', 'Developers (DevTools)', 'Students & Academia'
+        ];
+
+        const monetizationOptions = [
+            'SaaS (Subscription)', 'Freemium', 'API as a Service', 'Ad-Supported', 'Marketplace (Transaction Fee)'
+        ];
+
+        // --- DOM Element References ---
+        const skillsContainer = document.getElementById('skills-options');
+        const interestsContainer = document.getElementById('interests-options');
+        const audienceContainer = document.getElementById('audience-options');
+        const monetizationContainer = document.getElementById('monetization-options');
+        const generateBtn = document.getElementById('generate-btn');
+        const formContainer = document.getElementById('form-container');
+        const loadingContainer = document.getElementById('loading-container');
+        const resultContainer = document.getElementById('result-container');
+        const errorBox = document.getElementById('error-box');
+        const errorMessage = document.getElementById('error-message');
+
+        // --- Core Logic ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Populate all selection buttons
+            populateOptions(skillsContainer, skillsOptions);
+            populateOptions(interestsContainer, interestsOptions);
+            populateOptions(audienceContainer, audienceOptions);
+            populateOptions(monetizationContainer, monetizationOptions);
+            
+            // Initialize Lucide Icons
+            setTimeout(() => {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            }, 100); 
+
+            generateBtn.addEventListener('click', handleGenerate);
+        });
+
+        /**
+         * Populates a container with clickable options.
+         */
+        function populateOptions(container, options) {
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn py-2 px-4 rounded-full text-sm font-medium';
+                btn.textContent = option;
+                btn.dataset.value = option;
+                btn.onclick = () => btn.classList.toggle('selected');
+                container.appendChild(btn);
+            });
+        }
+
+        /**
+         * Constructs the full system prompt for the AI based on selections.
+         */
+        function constructAiSystemPrompt() {
+            return `
+                You are 'VentureBot,' an AI startup idea generator for ambitious high school and college students.
+                Your goal is to create a *plausible-sounding* and *resume-worthy* AI startup idea to impress elite college admissions and internship recruiters.
+                
+                RULES:
+                1. The idea MUST be highly technical, scalable, and leverage modern AI (GenAI, LLMs, NLP, Computer Vision).
+                2. The tone MUST be professional, exciting, and packed with business and tech buzzwords (e.g., 'disrupt,' 'synergy,' 'scalable,' 'B2B SaaS,' 'monetize,' 'first-mover advantage,' 'product-market fit').
+                3. The idea MUST be grounded in the user's provided skills and interests.
+                4. The 'resumeBulletPoints' MUST be high-impact, action-oriented, and quantifiable (even if aspirational, e.g., 'scaled to 1k users').
+                5. You MUST return the response as a single JSON object that conforms STRICTLY to the following structure. DO NOT include any text or markdown outside of the JSON object.
+                6. The JSON object should be preceded by the text "JSON_START" and followed by "JSON_END" to simplify extraction from the raw API response.
+                
+                JSON Structure: 
+                {
+                    "startupName": "string",
+                    "elevatorPitch": "string",
+                    "problemStatement": "string",
+                    "solution": "string",
+                    "coreTechnology": "string",
+                    "targetMarket": "string",
+                    "resumeBulletPoints": ["string", "string", ...]
+                }
+            `;
+        }
+
+        /**
+         * Constructs the user query for the AI based on selections.
+         */
+        function constructAiUserQuery(skills, interests, audience, monetization) {
+             const systemInstruction = constructAiSystemPrompt();
+             
+             const queryParts = [
+                `--- System Instruction ---\n${systemInstruction}`,
+                `--- User Parameters ---`,
+                `- Skills: ${skills.join(', ')}`,
+                `- Passions: ${interests.join(', ')}`,
+                audience.length > 0 ? `- Target Audience: ${audience.join(', ')}` : null,
+                monetization.length > 0 ? `- Monetization Model: ${monetization.join(', ')}` : null,
+                `\nGenerate the high-impact AI startup idea now, following the JSON structure precisely. START THE JSON WITH 'JSON_START' AND END WITH 'JSON_END'.`
+             ];
+
+             return queryParts.filter(p => p !== null).join('\n');
+        }
+
+        /**
+         * Handles the button click, gathers input, and calls the backend.
+         */
+        async function handleGenerate() {
+            const selectedSkills = Array.from(skillsContainer.querySelectorAll('.selected')).map(b => b.dataset.value);
+            const selectedInterests = Array.from(interestsContainer.querySelectorAll('.selected')).map(b => b.dataset.value);
+            const selectedAudience = Array.from(audienceContainer.querySelectorAll('.selected')).map(b => b.dataset.value);
+            const selectedMonetization = Array.from(monetizationContainer.querySelectorAll('.selected')).map(b => b.dataset.value);
+
+            if (selectedSkills.length === 0 || selectedInterests.length === 0) {
+                showError("Please select at least one skill and one passion to generate an idea.");
+                return;
+            }
+
+            // UI state updates
+            formContainer.classList.add('hidden');
+            loadingContainer.classList.remove('hidden');
+            resultContainer.innerHTML = ''; // Clear old results
+            errorBox.classList.add('hidden');
+            generateBtn.disabled = true;
+
+            const fullPrompt = constructAiUserQuery(selectedSkills, selectedInterests, selectedAudience, selectedMonetization);
+            
+            try {
+                // Fetch the RAW OpenAI response from your C++ backend
+                const rawResponse = await fetchBackend(fullPrompt);
+                
+                // Parse the raw response to extract the specific JSON idea object
+                const idea = parseOpenAIResponse(rawResponse); 
+                
+                displayResult(idea);
+            } catch (err) {
+                console.error("Error fetching startup idea:", err);
+                showError(`An error occurred: ${err.message}. Please ensure your C++ server is running and has the OPENAI_API_KEY environment variable set.`);
+            } finally {
+                // Restore UI
+                loadingContainer.classList.add('hidden');
+                generateBtn.disabled = false;
+            }
+        }
+        
+        /**
+         * Fetches the raw JSON response from the C++ backend.
+         */
+        async function fetchBackend(prompt) {
+            const response = await fetch(BACKEND_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                // The C++ backend expects the prompt wrapped in a 'message' key
+                body: JSON.stringify({ message: prompt })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                // Attempt to parse C++ error (like "OPENAI_API_KEY missing")
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    throw new Error(errorJson.error || errorText);
+                } catch {
+                    throw new Error(`Server responded with status ${response.status}: ${errorText}`);
+                }
+            }
+
+            return await response.json(); // Returns the full JSON from the C++ server/OpenAI
+        }
+        
+
+        /**
+         * Parses the full OpenAI JSON response to extract the structured idea.
+         */
+        function parseOpenAIResponse(json) {
+            // Check for OpenAI API errors returned by the C++ server
+            if (json.error) {
+                 throw new Error(`OpenAI API Error: ${json.error.message}`);
+            }
+
+            // 1. Extract the text content from the standard OpenAI chat completion structure
+            const rawContent = json.choices?.[0]?.message?.content;
+            
+            if (!rawContent) {
+                throw new Error("Invalid response structure or empty content from AI.");
+            }
+
+            // 2. We use markers to reliably find the JSON block in the raw text.
+            const startMarker = "JSON_START";
+            const endMarker = "JSON_END";
+
+            const startIndex = rawContent.indexOf(startMarker);
+            const endIndex = rawContent.indexOf(endMarker);
+            
+            if (startIndex === -1 || endIndex === -1) {
+                throw new Error("AI response did not contain the expected structured JSON (missing JSON_START or JSON_END markers). Raw content received was: " + rawContent);
+            }
+
+            // Extract the pure JSON string between the markers
+            const jsonString = rawContent.substring(startIndex + startMarker.length, endIndex).trim();
+            
+            // 3. Parse and return the structured idea object
+            try {
+                return JSON.parse(jsonString);
+            } catch (e) {
+                throw new Error(`Failed to parse the structured JSON from AI output. Parsing error: ${e.message}`);
+            }
+        }
+
+
+        /**
+         * Show error message and restore form visibility.
+         */
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorBox.classList.remove('hidden');
+            loadingContainer.classList.add('hidden');
+            formContainer.classList.remove('hidden');
+            generateBtn.disabled = false;
+        }
+        
+        /**
+         * Displays the generated result card.
+         */
+        function displayResult(idea) {
+            // Sanitize and provide fallbacks for display
+            const safeName = idea.startupName || "Unnamed Venture";
+            const safePitch = idea.elevatorPitch || "No pitch provided.";
+            const safeProblem = idea.problemStatement || "No problem statement provided.";
+            const safeSolution = idea.solution || "No solution provided.";
+            const safeTech = idea.coreTechnology || "No tech stack provided.";
+            const safeMarket = idea.targetMarket || "No target market provided.";
+            const safeBullets = Array.isArray(idea.resumeBulletPoints) ? idea.resumeBulletPoints : [];
+
+            let bulletsHtml = safeBullets.map(bullet => 
+                `<li class="flex items-start">
+                    <i data-lucide="check-circle" class="w-5 h-5 text-cyan-400 mr-2 flex-shrink-0" style="margin-top: 3px;"></i>
+                    <span class="text-slate-300">${bullet.replace(/'/g, "&apos;")}</span>
+                </li>`
+            ).join('');
+
+            resultContainer.innerHTML = `
+                <div class="bg-gray-900 border border-slate-800 p-6 md:p-8 rounded-xl shadow-2xl animate-fade-in">
+                    <h2 class="text-3xl font-bold mb-2 text-gradient">${safeName}</h2>
+                    <p class="text-lg text-slate-300 font-medium mb-6">${safePitch}</p>
+
+                    <div class="space-y-6">
+                        <!-- Problem Statement -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">The Problem</h3>
+                            <p class="text-slate-300">${safeProblem}</p>
+                        </div>
+
+                        <!-- The Solution -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Our Solution</h3>
+                            <p class="text-slate-300">${safeSolution}</p>
+                        </div>
+
+                        <!-- Core Technology -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Core Technology & Buzzwords</h3>
+                            <p class="text-slate-300">${safeTech}</p>
+                        </div>
+
+                        <!-- Target Market -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-2">Target Market & Monetization</h3>
+                            <p class="text-slate-300">${safeMarket}</p>
+                        </div>
+
+                        <!-- Resume-Ready Bullet Points -->
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3">Your Resume-Ready Bullets</h3>
+                            <ul class="space-y-2">
+                                ${bulletsHtml}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Reset Button -->
+                    <button id="reset-btn" class="mt-8 w-full text-center py-2 px-4 rounded-lg text-slate-400 font-medium bg-slate-800 hover:bg-slate-700 transition-colors">
+                        Generate Another Idea
+                    </button>
+                </div>
+            `;
+            
+            // Add required animation style
+            const styleSheet = document.createElement("style");
+            styleSheet.type = "text/css";
+            styleSheet.innerText = `
+                @keyframes fade-in {
+                    0% { opacity: 0; transform: translateY(10px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-in {
+                    animation: fade-in 0.5s ease-out;
+                }
+            `;
+            document.head.appendChild(styleSheet);
+            
+            // Re-run lucide icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+
+            // Add event listener for reset button
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                resultContainer.innerHTML = '';
+                formContainer.classList.remove('hidden');
+                // Clear selections
+                document.querySelectorAll('.option-btn.selected').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+            });
+        }
+    </script>
+</body>
+</html>
