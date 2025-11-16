@@ -1,0 +1,62 @@
+# ----------------------------------------
+# CORE SECRETS PROTECTION
+# ----------------------------------------
+
+# 1. Configuration files that contain API keys, credentials, or other secrets.
+#    NEVER commit these files, even if they are only used for local testing.
+.txt
+.env
+.local
+
+# ----------------------------------------
+# C++ / Executable Protection
+# ----------------------------------------
+
+# 2. Compiled executables and intermediate build artifacts.
+#    These are machine-specific and should be built by the cloud service.
+server
+*.out
+*.exe
+*.o
+*.obj
+build/
+bin/
+
+# ----------------------------------------
+# Dependency and Package Manager Files
+# ----------------------------------------
+
+# Since we are using Docker for the httplib, ignore any local package manager files
+# you might use (e.g., if you later add Python/Node).
+node_modules/
+vendor/
+
+# ----------------------------------------
+# IDE and OS Files
+# ----------------------------------------
+
+# macOS / Linux
+.DS_Store
+*.swp
+*~
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains/Clion/IntelliJ
+.idea/
+cmake-build-debug/
+```eof
+
+This `.gitignore` file is now saved for your project.
+
+**Remember:**
+
+1.  Save this content as a file named **`.gitignore`** (note the leading dot) in the root of your project directory.
+2.  Make sure you commit this file to Git:
+    ```bash
+    git add .gitignore
+    git commit -m "Added .gitignore for security"
+    git push
+    ```
+3.  **Crucially:** Never place your actual `OPENAI_API_KEY` directly into any file that is *not* listed here (like `server.cpp` or `index.html`) or push it to your repository. It must be set as an **environment variable** during the cloud deployment process.
