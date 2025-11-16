@@ -60,3 +60,4 @@ This `.gitignore` file is now saved for your project.
     git push
     ```
 3.  **Crucially:** Never place your actual `OPENAI_API_KEY` directly into any file that is *not* listed here (like `server.cpp` or `index.html`) or push it to your repository. It must be set as an **environment variable** during the cloud deployment process.
+key.txt
