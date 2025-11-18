@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synapse-MX: Market Cap Hyper-Projection Nexus</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'matrix-black': '#0A0A0A',
+                        'matrix-green': '#00FF41',
+                        'matrix-neon': '#39FF14',
+                        'matrix-dark-green': '#008F11',
+                        'error-red': '#FF4500'
+                    },
+                    fontFamily: {
+                        mono: ['"Space Mono"', 'monospace'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neon': '0 0 5px #39FF14, 0 0 10px #39FF14, 0 0 15px #00FF41',
+                        'neon-sm': '0 0 2px #39FF14, 0 0 5px #00FF41',
+                    },
+                    keyframes: {
+                        'glitch': {
+                            '0%, 100%': { transform: 'translate(0, 0)', opacity: '1' },
+                            '20%': { transform: 'translate(-2px, 2px)', opacity: '0.8' },
+                            '40%': { transform: 'translate(1px, -1px)', opacity: '0.9' },
+                            '60%': { transform: 'translate(-1px, -3px)', opacity: '0.7' },
+                            '80%': { transform: 'translate(3px, 1px)', opacity: '0.95' },
+                        }
+                    },
+                    animation: {
+                        'glitch': 'glitch 0.5s infinite alternate',
+                        'pulse-neon': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar for matrix effect */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A0A0A;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #008F11;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00FF41;
+        }
+
+        /* Glitch Effect on the title */
+        .glitch-text {
+            text-shadow: 0 0 7px #00FF41;
+            animation: pulse-neon 2s infinite;
+        }
+
+        /* Specific styles for the text area and buttons */
+        textarea, button, input {
+            border: 1px solid #008F11 !important;
+            box-shadow: 0 0 5px #008F11 !important;
+            background-color: #0A0A0A !important;
+            color: #00FF41 !important;
+            transition: all 0.2s;
+        }
+        button:hover:not(:disabled), .assessment-good {
+            box-shadow: 0 0 10px #39FF14, 0 0 20px #00FF41 !important;
+            background-color: #0A0A0A !important;
+            color: #FFFFFF !important;
+        }
+        .assessment-bad {
+            box-shadow: 0 0 10px #FF4500, 0 0 20px #FF4500 !important;
+            color: #FFFFFF !important;
+            background-color: #331111 !important;
+        }
+        button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            box-shadow: none !important;
+        }
+    </style>
+</head>
+<body class="bg-matrix-black text-matrix-neon font-mono min-h-screen p-4 sm:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <!-- Title & Header -->
+        <header class="text-center mb-10 p-4 border-b border-matrix-dark-green rounded-xl shadow-neon-sm">
+            <h1 class="text-3xl sm:text-5xl font-bold glitch-text uppercase">
+                Synapse-MX
+            </h1>
+            <p class="text-sm sm:text-xl text-matrix-green mt-2">
+                Synergistic Market Cap Hyper-Projection Nexus
+            </p>
+        </header>
+
+        <!-- Input and Control Panel -->
+        <div class="mb-8 p-6 bg-matrix-black rounded-lg shadow-neon-sm border border-matrix-dark-green">
+            <label for="startupInput" class="block mb-3 text-lg font-semibold text-matrix-neon">
+                // INPUT_MATRIX: Enter your conceptual market vector
+            </label>
+            <textarea id="startupInput" rows="3" placeholder="e.g., A decentralized, tokenized AI model for personalized fitness coaching."
+                      class="w-full p-3 rounded-lg resize-none text-base bg-matrix-black focus:outline-none"
+                      style="border: 1px solid #008F11; box-shadow: 0 0 5px #008F11;">A quantum-secured blockchain for global supply chain optimization.</textarea>
+            
+            <div class="mt-4 flex justify-center">
+                <button id="analyzeButton" onclick="runAnalysis()"
+                        class="px-8 py-3 text-lg font-bold rounded-full uppercase tracking-wider transition-all duration-200">
+                    Execute Analysis // INIT_VECTOR
+                </button>
+            </div>
+        </div>
+
+        <!-- Loading & Status Section -->
+        <div id="statusArea" class="hidden text-center mb-8 p-4 bg-matrix-black rounded-lg border border-matrix-dark-green">
+            <p id="loadingText" class="text-2xl font-bold text-matrix-neon animate-pulse-neon">
+                // INITIATING HYPER-PROJECTION SEQUENCE... STANDBY
+            </p>
+            <p class="text-sm mt-2 text-matrix-dark-green">
+                Parsing billions of data points. Please wait for the matrix convergence.
+            </p>
+        </div>
+
+        <!-- Output Display Area -->
+        <div id="outputArea" class="hidden">
+            <h2 class="text-2xl font-bold mb-6 text-matrix-neon border-b border-matrix-dark-green pb-2">
+                // ANALYSIS_OUTPUT: Synergistic Data Stream
+            </h2>
+
+            <div id="startupInfo" class="mb-8 p-6 rounded-xl border border-matrix-dark-green shadow-neon-sm">
+                <!-- Startup Info will be injected here -->
+            </div>
+
+            <!-- Comparables Table (The Core Matrix) -->
+            <div class="mb-8 overflow-x-auto">
+                <table class="w-full text-left border-collapse border border-matrix-dark-green">
+                    <caption class="text-xl font-semibold mb-2 text-matrix-neon">
+                        // COMPARABLE_MATRIX: Financial Vectors
+                    </caption>
+                    <thead class="bg-matrix-dark-green text-matrix-black">
+                        <tr>
+                            <th class="p-3 uppercase">Target Entity</th>
+                            <th class="p-3 uppercase">Market Cap ($B)</th>
+                            <th class="p-3 uppercase">Annual Revenue ($B)</th>
+                            <th class="p-3 uppercase">P/E Ratio (x)</th>
+                            <th class="p-3 uppercase">3-Yr Projection (YoY)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="comparablesTableBody">
+                        <!-- Comparative data will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Final Assessment & Rationale -->
+            <div id="assessmentBlock" class="p-6 rounded-xl shadow-neon border border-matrix-dark-green">
+                <h3 class="text-xl font-bold mb-3">// EVALUATION: Unbiased System Assessment</h3>
+                <div id="assessmentResult" class="text-3xl font-extrabold p-2 rounded-lg mb-4 text-center"></div>
+                <p id="rationaleText" class="text-base leading-relaxed text-matrix-neon"></p>
+                <p id="metricsExplanationText" class="text-sm mt-4 italic text-matrix-dark-green"></p>
+            </div>
+        </div>
+        
+        <!-- Error Message Box -->
+        <div id="errorBox" class="hidden p-4 rounded-lg mt-8 bg-error-red/20 border border-error-red text-error-red shadow-neon-sm">
+            <p class="font-bold">!! SYSTEM FAILURE !!</p>
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('startupInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    runAnalysis();
+                }
+            });
+        });
+
+        function cleanupAIResponse(rawText) {
+            let cleanedText = rawText.trim();
+            // 1. Remove common markdown fences (```json, ```) and potential language specifiers
+            cleanedText = cleanedText.replace(/^```(json)?\s*|^\s*```/i, '').replace(/\s*```\s*$/, '');
+            // 2. Remove any preamble text (like "Here is the JSON result:")
+            cleanedText = cleanedText.replace(/^(?:Here is the JSON object|Here is the JSON result|Here is the analysis|Here is the output|The JSON response follows):\s*/i, '');
+            return cleanedText.trim();
+        }
+
+        async function runAnalysis() {
+            const inputElement = document.getElementById('startupInput');
+            const buttonElement = document.getElementById('analyzeButton');
+            const statusArea = document.getElementById('statusArea');
+            const outputArea = document.getElementById('outputArea');
+            const errorBox = document.getElementById('errorBox');
+            
+            const startupIdea = inputElement.value.trim();
+            if (!startupIdea) {
+                errorBox.classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = 'Input vector is null. Please define a conceptual market.';
+                return;
+            }
+
+            // UI State: Loading
+            buttonElement.disabled = true;
+            outputArea.classList.add('hidden');
+            errorBox.classList.add('hidden');
+            statusArea.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: startupIdea })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // The AI's response is nested and returned as a string.
+                const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || data.error || '';
+
+                if (!rawText) {
+                    throw new Error("AI response was empty or malformed.");
+                }
+                
+                // CRITICAL FIX: Clean up the raw text before parsing
+                const cleanedJsonText = cleanupAIResponse(rawText);
+
+                // Attempt to parse the cleaned JSON string
+                let analysisData;
+                try {
+                    analysisData = JSON.parse(cleanedJsonText);
+                } catch (e) {
+                    console.error("Failed to parse AI JSON. Cleaned text:", cleanedJsonText);
+                    throw new Error("Analysis failed JSON deserialization. The AI returned invalid data.");
+                }
+
+                renderAnalysis(analysisData);
+
+            } catch (error) {
+                console.error("Analysis Error:", error);
+                document.getElementById('errorMessage').textContent = `ERROR: ${error.message}. Please review the backend logs.`;
+                errorBox.classList.remove('hidden');
+            } finally {
+                // UI State: Ready
+                buttonElement.disabled = false;
+                statusArea.classList.add('hidden');
+            }
+        }
+
+        function renderAnalysis(data) {
+            const outputArea = document.getElementById('outputArea');
+            const startupInfo = document.getElementById('startupInfo');
+            const comparablesTableBody = document.getElementById('comparablesTableBody');
+            const assessmentResult = document.getElementById('assessmentResult');
+            const rationaleText = document.getElementById('rationaleText');
+            const metricsExplanationText = document.getElementById('metricsExplanationText');
+            
+            // 1. Render Startup Info
+            startupInfo.innerHTML = `
+                <p class="text-xl text-matrix-green mb-2">Startup Name: <span class="text-white font-bold">${data.startupName || 'ERROR: NO NAME'}</span></p>
+                <p class="text-base text-matrix-neon leading-relaxed">${data.startupIdea || 'ERROR: NO IDEA RENDERED'}</p>
+            `;
+            
+            // 2. Render Comparables Table
+            comparablesTableBody.innerHTML = (data.comparables || []).map(comp => `
+                <tr class="hover:bg-matrix-dark-green/30 transition-colors duration-150 border-t border-matrix-dark-green">
+                    <td class="p-3 font-semibold text-white">${comp.company || 'N/A'} <span class="text-xs block text-matrix-dark-green">${comp.industry || ''}</span></td>
+                    <td class="p-3">${comp.marketCapB || 'N/A'}</td>
+                    <td class="p-3">${comp.revenueB || 'N/A'}</td>
+                    <td class="p-3">${comp.peRatio || 'N/A'}</td>
+                    <td class="p-3 text-matrix-neon">${comp.projectionYoY || 'N/A'}</td>
+                </tr>
+            `).join('');
+
+            // 3. Render Assessment
+            const assessment = (data.assessment || 'UNKNOWN').toUpperCase();
+            
+            assessmentResult.textContent = `STATUS: ${assessment}`;
+            
+            // Clear previous styles and apply new ones
+            assessmentResult.classList.remove('assessment-good', 'assessment-bad', 'bg-gray-700');
+            if (assessment === 'GOOD') {
+                assessmentResult.classList.add('assessment-good');
+            } else if (assessment === 'BAD') {
+                assessmentResult.classList.add('assessment-bad');
+            } else {
+                assessmentResult.classList.add('bg-gray-700', 'text-white');
+            }
+
+            rationaleText.textContent = data.rationale || 'No rationale provided by the system.';
+            metricsExplanationText.textContent = `// METRIC_SUBSTRATE: ${data.metricsExplanation || 'No metrics context provided.'}`;
+
+            outputArea.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
