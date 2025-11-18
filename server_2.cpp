@@ -121,7 +121,7 @@ int main() {
         // Serve index.html
         // -----------------------------------------
         if (request.find("GET / ") == 0) {
-            std::string html = load_file("Public/index_2.html");
+            std::string html = load_file("index_2.html");
             if (html.empty()) {
                 send_http_response(client, "index.html not found", "text/plain");
             } else {
