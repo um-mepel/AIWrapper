@@ -36,7 +36,7 @@ std::string call_openai_api(const std::string& prompt) {
     if (curl) {
         json payload = {
             // Using the model specified in the original file
-            {"model", "gpt-4o-mini"},
+            {"model", "gpt-5"},
             {"messages", {
                 // The entire persona and JSON request is injected as the user's content
                 { {"role","user"}, {"content", prompt} }
