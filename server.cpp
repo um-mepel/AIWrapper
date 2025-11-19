@@ -1,36 +1,41 @@
+#include "httplib.h"
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <cstdlib>
 #include <curl/curl.h>
 #include "json.hpp"
+
 using json = nlohmann::json;
 
 // =========================================================
-// UTILITY: Read a whole file
+// Read a whole file
 // =========================================================
-std::string load_file(const std::string& path) {
+std::string load_file(const std::string &path) {
     std::ifstream f(path);
     if (!f.is_open()) return "";
-    return { std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>() };
+    return { std::istreambuf_iterator<char>(f),
+             std::istreambuf_iterator<char>() };
 }
 
 // =========================================================
-// UTILITY: Write callback (for libcurl)
+// libcurl write callback
 // =========================================================
-size_t write_callback(void* contents, size_t size, size_t nmemb, void* userp) {
-    ((std::string*)userp)->append((char*)contents, size * nmemb);
+size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
+    ((std::string *)userp)->append((char *)contents, size * nmemb);
     return size * nmemb;
 }
 
 // =========================================================
-// SEND REQUEST TO OPENAI API
+// Call OpenAI API using libcurl
 // =========================================================
-std::string call_openai_api(const std::string& prompt) {
-    const char* key = std::getenv("OPENAI_API_KEY");
-    if (!key) return "{\"error\":\"API key missing\"}";
+std::string call_openai(const std::string &prompt) {
+    const char *key = std::getenv("OPENAI_API_KEY");
+    if (!key) {
+        return R"({"error":"OPENAI_API_KEY missing"})";
+    }
 
-    CURL* curl = curl_easy_init();
+    CURL *curl = curl_easy_init();
     std::string response;
 
     if (curl) {
@@ -43,7 +48,7 @@ std::string call_openai_api(const std::string& prompt) {
 
         std::string json_str = payload.dump();
 
-        struct curl_slist* headers = nullptr;
+        struct curl_slist *headers = NULL;
         headers = curl_slist_append(headers, ("Authorization: Bearer " + std::string(key)).c_str());
         headers = curl_slist_append(headers, "Content-Type: application/json");
 
@@ -53,12 +58,7 @@ std::string call_openai_api(const std::string& prompt) {
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
 
-        CURLcode res = curl_easy_perform(curl);
-
-        if (res != CURLE_OK) {
-            response = "{\"error\":\"curl request failed\"}";
-        }
-
+        curl_easy_perform(curl);
         curl_easy_cleanup(curl);
         curl_slist_free_all(headers);
     }
@@ -67,87 +67,54 @@ std::string call_openai_api(const std::string& prompt) {
 }
 
 // =========================================================
-// VERY SIMPLE HTTP SERVER (NO EXTERNAL LIBS!)
+// Main server using cpp-httplib
 // =========================================================
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-
-void send_http_response(int client, const std::string& content, const std::string& type="application/json") {
-    std::string header =
-        "HTTP/1.1 200 OK\r\n"
-        "Access-Control-Allow-Origin: *\r\n"
-        "Content-Type: " + type + "\r\n"
-        "Content-Length: " + std::to_string(content.size()) + "\r\n"
-        "Connection: close\r\n\r\n";
-
-    std::string full = header + content;
-    send(client, full.c_str(), full.size(), 0);
-}
-
 int main() {
-    const char* key = std::getenv("OPENAI_API_KEY");
-    if (!key) {
-        std::cout << "ERROR: OPENAI_API_KEY not set\n";
-        return 1;
-    }
+    httplib::Server svr;
 
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    sockaddr_in address{};
-    address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
-    address.sin_port = htons(8080);
+    // ---------- STATIC FILES ----------
+    svr.Get("/", [](const httplib::Request&, httplib::Response &res) {
+        std::string html = load_file("index.html");
+        if (html.empty()) {
+            res.status = 404;
+            res.set_content("index.html missing", "text/plain");
+        } else {
+            res.set_content(html, "text/html");
+        }
+    });
 
-    bind(server_fd, (sockaddr*)&address, sizeof(address));
-    listen(server_fd, 10);
+    // ---------- CORS ----------
+    svr.Options(R"((.*))", [](const httplib::Request&, httplib::Response &res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
+        res.set_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+        res.set_header("Access-Control-Allow-Headers", "Content-Type");
+        res.status = 200;
+    });
 
-    std::cout << "Backend running at http://localhost:8080\n";
+    // ---------- POST /api/chat ----------
+    svr.Post("/api/chat", [](const httplib::Request &req, httplib::Response &res) {
+        res.set_header("Access-Control-Allow-Origin", "*");
 
-    while (true) {
-        int client = accept(server_fd, nullptr, nullptr);
-
-        char buffer[4096];
-        int bytes = read(client, buffer, sizeof(buffer));
-        if (bytes <= 0) {
-            close(client);
-            continue;
+        if (!req.body.size()) {
+            res.status = 400;
+            res.set_content(R"({"error":"Empty request body"})", "application/json");
+            return;
         }
 
-        std::string request(buffer, bytes);
-
-        // -----------------------------------------
-        // Serve index.html
-        // -----------------------------------------
-        if (request.find("GET / ") == 0) {
-            std::string html = load_file("index.html");
-            if (html.empty()) {
-                send_http_response(client, "index.html not found", "text/plain");
-            } else {
-                send_http_response(client, html, "text/html");
-            }
-        }
-        // -----------------------------------------
-        // Serve /api/chat
-        // -----------------------------------------
-        else if (request.find("POST /api/chat") == 0) {
-            std::string body = request.substr(request.find("\r\n\r\n") + 4);
-            json data = json::parse(body);
-            std::string msg = data["message"];
-
-            std::string api_response = call_openai_api(msg);
-
-            send_http_response(client, api_response, "application/json");
-        }
-        // -----------------------------------------
-        // 404
-        // -----------------------------------------
-        else {
-            send_http_response(client, "Not Found", "text/plain");
+        json received = json::parse(req.body, nullptr, false);
+        if (received.is_discarded() || !received.contains("message")) {
+            res.status = 400;
+            res.set_content(R"({"error":"Invalid JSON or missing 'message'"})", "application/json");
+            return;
         }
 
-        close(client);
-    }
+        std::string user_msg = received["message"];
+        std::string api_response = call_openai(user_msg);
 
-    close(server_fd);
-    return 0;
+        res.status = 200;
+        res.set_content(api_response, "application/json");
+    });
+
+    std::cout << "Server running on port 8080\n";
+    svr.listen("0.0.0.0", 8080);
 }
