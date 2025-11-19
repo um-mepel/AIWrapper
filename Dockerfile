@@ -9,6 +9,8 @@ RUN apt-get update && apt-get install -y libcurl4-openssl-dev
 
 # Copy your source code
 COPY server.cpp server.cpp
+COPY json.hpp json.hpp
+COPY httplib.h httplib.h
 
 # Compile the application. Link against curl and the standard C++ library.
 RUN g++ -o server server.cpp -lcurl -std=c++17
