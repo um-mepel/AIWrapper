@@ -20,14 +20,17 @@ FROM debian:stable-slim
 
 # Install libcurl runtime dependency
 RUN apt-get update && apt-get install -y libcurl4
-
 WORKDIR /app
 
-# Copy the compiled binary from the builder stage
+# Copy the compiled binary
 COPY --from=builder /app/server /app/server
 
-# Expose the port (Cloud Run will handle the public mapping)
-EXPOSE 8080
+# 🛑 CRITICAL FIX: Copy index.html from the local root into the container's /app directory
+# This assumes index.html is in your local project root.
+COPY index.html /app/ 
 
-# Set the entrypoint to run the server
+# Optional: Set permissions
+RUN chmod -R 755 /app
+
+EXPOSE 8080
 CMD ["./server"]
